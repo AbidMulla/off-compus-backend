@@ -800,7 +800,97 @@ const activateAccountResendOTP = async (req, res) => {
     }
 };
 
-// 11. LOGOUT
+// 11. ACTIVATE ACCOUNT OTP VERIFICATION
+const activateAccountOTP = async (req, res) => {
+    try {
+        console.log('=== ACTIVATE ACCOUNT OTP VERIFICATION START ===');
+        console.log('Request body:', { email: req.body.email, otp: req.body.otp });
+        
+        const { email, otp } = req.body;
+
+        // Validation
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and OTP are required'
+            });
+        }
+
+        // Find user
+        const user = await User.findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Check if user is already verified
+        if (user.is_email_verified) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is already verified'
+            });
+        }
+
+        // Check OTP
+        if (user.otp_code !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid OTP'
+            });
+        }
+
+        // Check OTP expiration
+        if (new Date() > user.otp_expire_at) {
+            return res.status(400).json({
+                success: false,
+                message: 'OTP has expired. Please request a new one.'
+            });
+        }
+
+        // Activate user
+        user.is_email_verified = true;
+        user.is_active = true;
+        user.otp_code = undefined;
+        user.otp_expire_at = undefined;
+        await user.save();
+
+        // Send welcome email
+        try {
+            await sendWelcomeEmail(email, user.name);
+        } catch (emailError) {
+            console.error('Welcome email sending failed:', emailError);
+            // Don't fail activation if welcome email fails
+        }
+
+        console.log('=== ACTIVATE ACCOUNT OTP VERIFICATION SUCCESS ===');
+        res.status(200).json({
+            success: true,
+            message: 'Account activated successfully. You can now login.',
+            data: {
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    is_email_verified: user.is_email_verified,
+                    is_active: user.is_active
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('=== ACTIVATE ACCOUNT OTP VERIFICATION ERROR ===');
+        console.error('Activate account OTP verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during OTP verification',
+            error: error.message
+        });
+    }
+};
+
+// 12. LOGOUT
 const logout = async (req, res) => {
     try {
         console.log('=== LOGOUT START ===');
@@ -839,6 +929,7 @@ module.exports = {
     forgotPasswordOTP,
     resetPassword,
     activateAccount,
+    activateAccountOTP,
     registerResendOTP,
     forgotPasswordResendOTP,
     activateAccountResendOTP,

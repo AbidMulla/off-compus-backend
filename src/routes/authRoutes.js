@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 
@@ -10,11 +11,12 @@ const {
     forgotPasswordOTP, 
     resetPassword, 
     activateAccount, 
+    activateAccountOTP, 
     registerResendOTP, 
     forgotPasswordResendOTP, 
     activateAccountResendOTP, 
     logout 
-} = require('../controllers/user/auth.contollers');
+} = require('../controllers/user/auth.controllers');
 
 // Auth public Routes
 router.post('/register', register);
@@ -22,6 +24,7 @@ router.post('/register-otp', registerOTP);
 router.post('/register-resend-otp', registerResendOTP);
 
 router.post('/activate-account', activateAccount);
+router.post('/activate-account-otp', activateAccountOTP);
 router.post('/activate-account-resend-otp', activateAccountResendOTP);
 
 router.post('/login', login);
