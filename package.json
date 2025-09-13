@@ -1,0 +1,33 @@
+{
+  "name": "event_backend",
+  "version": "1.0.0",
+  "main": "src/app/server.js",
+  "scripts": {
+    "start": "node src/app/server.js",
+    "dev": "nodemon src/app/server.js",
+    "seed:roles": "node src/config/seeders/roleSeeder.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "event",
+    "backend",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Backend API with node and mongodb",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "multer": "^2.0.1",
+    "nodemailer": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
