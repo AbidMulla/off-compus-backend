@@ -195,6 +195,9 @@ const registerOTP = async (req, res) => {
             // Don't fail activation if welcome email fails
         }
 
+        // Get user role
+        const userRole = await UserRole.findOne({ user_id: user._id }).populate('role_id');
+
         // Generate JWT token
         const token = generateToken(user._id);
 
@@ -215,7 +218,11 @@ const registerOTP = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     is_email_verified: user.is_email_verified,
-                    is_active: user.is_active
+                    is_active: user.is_active,
+                    role: userRole ? {
+                        id: userRole.role_id._id,
+                        name: userRole.role_id.name
+                    } : null
                 }
             }
         });
@@ -294,6 +301,11 @@ const login = async (req, res) => {
         }
         console.log('Password verified successfully');
 
+        // Get user role
+        console.log('Getting user role...');
+        const userRole = await UserRole.findOne({ user_id: user._id }).populate('role_id');
+        console.log('User role found:', userRole ? { roleId: userRole.role_id._id, roleName: userRole.role_id.name } : 'No role found');
+
         // Generate JWT token
         console.log('Generating JWT token...');
         const token = generateToken(user._id);
@@ -319,7 +331,11 @@ const login = async (req, res) => {
                     email: user.email,
                     mobile_no: user.mobile_no,
                     is_email_verified: user.is_email_verified,
-                    is_active: user.is_active
+                    is_active: user.is_active,
+                    role: userRole ? {
+                        id: userRole.role_id._id,
+                        name: userRole.role_id.name
+                    } : null
                 }
             }
         });
@@ -864,6 +880,9 @@ const activateAccountOTP = async (req, res) => {
             // Don't fail activation if welcome email fails
         }
 
+        // Get user role
+        const userRole = await UserRole.findOne({ user_id: user._id }).populate('role_id');
+
         console.log('=== ACTIVATE ACCOUNT OTP VERIFICATION SUCCESS ===');
         res.status(200).json({
             success: true,
@@ -874,7 +893,11 @@ const activateAccountOTP = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     is_email_verified: user.is_email_verified,
-                    is_active: user.is_active
+                    is_active: user.is_active,
+                    role: userRole ? {
+                        id: userRole.role_id._id,
+                        name: userRole.role_id.name
+                    } : null
                 }
             }
         });
