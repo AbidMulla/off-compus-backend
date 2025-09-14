@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import admin controllers
-const { addJob, getJobs, getJobById, updateJob, deleteJob } = require('../controllers/admin/job-management');
+const { addJob, getJobs, getJobById, viewJobById, updateJob, deleteJob } = require('../controllers/admin/job-management');
 
 // Admin Routes
 // router.get('/dashboard', getAdminDashboard);
@@ -12,6 +12,7 @@ const { addJob, getJobs, getJobById, updateJob, deleteJob } = require('../contro
 router.post('/add-job', addJob);
 router.get('/jobs', getJobs);
 router.get('/jobs/:id', getJobById);
+router.get('/view-job/:id', viewJobById);
 router.put('/jobs/:id', updateJob);
 router.delete('/jobs/:id', deleteJob);
 

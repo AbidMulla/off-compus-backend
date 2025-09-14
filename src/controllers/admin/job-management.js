@@ -178,22 +178,52 @@ const getJobs = async (req, res) => {
         console.log('=== GET JOBS API CALLED ===');
         console.log('Query Parameters:', req.query);
         
-        const { page = 1, limit = 10, status, search } = req.query;
+        const { 
+            page = 1, 
+            limit = 10, 
+            status, 
+            search, 
+            job_type, 
+            location, 
+            employment_type 
+        } = req.query;
+        
         const skip = (page - 1) * limit;
 
         // Build filter object
         const filter = { is_deleted: false };
         
-        if (status) {
+        // Status filter
+        if (status && status !== 'all') {
             filter.status = status;
             console.log('Filter by status:', status);
         }
 
+        // Job type filter
+        if (job_type && job_type !== 'all') {
+            filter.job_type = job_type;
+            console.log('Filter by job_type:', job_type);
+        }
+
+        // Location filter
+        if (location && location !== 'all') {
+            filter.location = location;
+            console.log('Filter by location:', location);
+        }
+
+        // Employment type filter
+        if (employment_type && employment_type !== 'all') {
+            filter.employment_type = employment_type;
+            console.log('Filter by employment_type:', employment_type);
+        }
+
+        // Search filter
         if (search) {
             filter.$or = [
                 { job_title: { $regex: search, $options: 'i' } },
                 { company: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } }
+                { location: { $regex: search, $options: 'i' } },
+                { job_description: { $regex: search, $options: 'i' } }
             ];
             console.log('Filter by search:', search);
         }
@@ -261,6 +291,47 @@ const getJobById = async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching job:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// View job by ID (for detailed view)
+const viewJobById = async (req, res) => {
+    try {
+        console.log('=== VIEW JOB BY ID API CALLED ===');
+        const { id } = req.params;
+        console.log('Job ID:', id);
+
+        console.log('Fetching job details from database...');
+        const job = await JobManagement.findById(id)
+            .populate('posted_by', 'name email')
+            .populate('last_modified_by', 'name email');
+
+        if (!job) {
+            console.log('Job not found with ID:', id);
+            return res.status(404).json({
+                success: false,
+                message: 'Job not found'
+            });
+        }
+
+        // Increment view count
+        await JobManagement.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
+        console.log('Job details found:', job._id);
+        console.log('Job data:', JSON.stringify(job, null, 2));
+
+        res.status(200).json({
+            success: true,
+            data: job
+        });
+
+    } catch (error) {
+        console.error('Error fetching job details:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error',
@@ -386,6 +457,7 @@ module.exports = {
     addJob,
     getJobs,
     getJobById,
+    viewJobById,
     updateJob,
     deleteJob
 };
